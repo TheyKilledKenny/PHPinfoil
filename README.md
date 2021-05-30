@@ -1,9 +1,18 @@
 # PHPinfoil
-Simple PHP, no database, to serve your backups and eshop games to Tinfoil.
+Simple PHP, one file, no database, no external library and no bullshit to serve your backups and eshop games to Tinfoil.
 
+I needed a light and fast php to create a repository for Tinfoil so that I could install backups without links. 
+The two projects I found, however, were not able to manage a folder structure, which for some archives can also be articulated.
+I also didn't have any need to link to external GDrives or similar.
+If you want to use GDrive or other external link, please check other more feature rich, projets like
+https://github.com/ibnux/php-tinfoil-server
+
+I then took a Raspberry to which I connected my usb HDD, and with this php I solved my problems.
+
+### What it does
 - Cycles through all the files and folders in the given path and creates the json file to be provided to Tinfoil
-- Creates the json index cache, so in case the collection is very large, it is not necessary to rescan all the files. Write permissions to a folder are required.
-  The first time it creates a cache file, the following times if the cache file exists this is provided, otherwise a new file is created
+- The first run it creates a json index cache file (write permission is needed), to avoid rescan all the files.
+  The following times if the cache file exists this is provided, otherwise a new file is created
 - Call the PHPinfoil.php with ?reset to delete and recreate the cache file
 - No Database Needed
   
@@ -33,7 +42,7 @@ Set parameters with this values:
 ```
 in Tinfoil set a location to http://1.2.3.4:8080/php/
 
-
+(the belows are quick examples, not intended for production environment)
 ## Setup a Raspberry Pi and a USB HDD (with your backups) as personal shop:
 1. Follow this link to setup a nginx webserver and php: https://www.raspberrypi.org/documentation/remote-access/web-server/nginx.md
 2. Connect the usb hdd, open a terminal on your raspberry pi
@@ -48,5 +57,14 @@ in Tinfoil set a location to http://1.2.3.4:8080/php/
 10. enter the address http://rpi.address.ip/php/ in Tinfoil as a new location or open in a web browser to check the resulting json.
 
 
+## From your PC Windows, Linux and should work also on MacOs
+1. Install PHP 5 or greater for your system from https://www.php.net/downloads
+2. copy `PHPinfoil.php` in the folder where you store your games and rename it in `index.php`
+3. open terminal/cmd/bash/whatever
+4. type `ipconfig` or `ifconfig` command to get your current ip address
+5. cd into your game folder
+6. type `php -S 0.0.0.0:80` to start php webserver
+7. set in Tinfoil a location to http://yourIp.at.step.4/
+8. close and reopen Tinfoil
 
 
