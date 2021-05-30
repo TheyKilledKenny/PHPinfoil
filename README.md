@@ -52,7 +52,7 @@ in Tinfoil set a location to http://1.2.3.4:8080/php/
 6. type ```sudo mkdir /var/www/html/cache``` and ```sudo chmod 777 /var/www/html/cache```
 7. type ```sudo mkdir /var/www/html/games``` to create a folder where to mount the usb drive
 8. type `sudo nano /etc/fstab` and add this line at the end
-    `UUID=uuid_Found_In_Step2 /var/www/html/data auto uid=pi,gid=pi 0 0`
+    `UUID=uuid_Found_In_Step2 /var/www/html/games auto uid=pi,gid=pi 0 0`
 9. Reboot
 10. enter the address http://rpi.address.ip/php/ in Tinfoil as a new location or open in a web browser to check the resulting json.
 
