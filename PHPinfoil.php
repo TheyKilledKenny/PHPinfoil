@@ -60,7 +60,9 @@ $cacheFolder = "cache/";							//the cache Folder where to store the cache file.
 $cacheFile = "cache";								//the cached file. MUST Have write permission
 $arrExtensions = ['nsp','xci','nsz', 'xcz'];		//which extensions to list 
 $DBI = true;										//if true then output in html to be compatible with DBI installer
-
+$BackColor = "#000000";								//Page Background Color
+$ForeColor = "#cccccc";								//Text Color
+$AltRowColor = "#222222";							//File list alternate row color
 
 /****************************************
 *		Headers for Json File           *
@@ -80,8 +82,10 @@ if(file_exists($rootFolder.$cacheFolder.$cacheFile) && !isset($_GET['reset'])){
 
 //Else recalculate, save and send cache file
 }else{
+	set_time_limit(0);			//Try to avoid Timeout for big collection of files
 	$aar = recursiveDirectoryIterator($Folder, $Host);
 	$aarr['total'] = count($aar);
+	asort($aar);				//Try to Sort
 	$aarr['files'] = $aar;
 	if(trim($MOTD) != "") $aarr['success'] = $MOTD;
 
@@ -98,11 +102,11 @@ if(file_exists($rootFolder.$cacheFolder.$cacheFile) && !isset($_GET['reset'])){
 		//Save file and stream it out
 		if ($DBI) {
 			file_put_contents($rootFolder.$cacheFolder.$cacheFile ,createHtml($aar));
-			readfile($rootFolder.$cacheFolder.$cacheFile);
 		} else {
 			file_put_contents($rootFolder.$cacheFolder.$cacheFile ,json_encode($aarr));
-			readfile($rootFolder.$cacheFolder.$cacheFile);
 		}
+		
+		readfile($rootFolder.$cacheFolder.$cacheFile);
 	}
 }
 
@@ -114,15 +118,65 @@ function createHtml($arr = null) {
 	
 	global $rootFolder;
 	global $MOTD;
+	global $BackColor;
+	global $ForeColor;
+	global $AltRowColor;
 	
-	$htmlPage = "<html><head><title>$MOTD</title></head><body><h1>".count($arr)." Titles found</h1>";
+	$htmlPage = "<html>
+<head>
+	<style type=\"text/css\">
+
+		/* General styles */
+		BODY {
+			background-color:".$BackColor.";
+			color:".$ForeColor.";
+			font-family:sans-serif;
+		}
+		
+		A {
+			color: ".$ForeColor.";
+			text-decoration: none;
+		}
+
+		A:hover {
+			text-decoration: underline;
+		}
+		
+		table {
+			width:90%;
+			margin: auto;
+			font-size:small;
+		}
+		
+		tr:nth-child(even) {
+            background-color: ".$AltRowColor.";
+        }
+	</style>
+	<title>$MOTD</title>
+</head>
+<body>
+	<center><h1>Files Found: ".count($arr)."</h1></center>
+	<table>
+		<tr><td>&nbsp;</td><td><b>FILES</b></td><td><b>SIZE</b></td><tr>
+	";
 	
+	//Here get the files and create rows
 	foreach ( $arr as $file ) {
-       $htmlPage = $htmlPage . '<a href="' . $file['url'] . '">' . $file['name'] . '</a><br />';	// info->isFile ()) {
+		
+       $htmlPage = $htmlPage . '
+	   <tr>
+		<td> - </td>
+		<td><a href="' . $file['url'] . '">' . $file['name'] . '</a><br /></td>
+		<td style="text-align:right;"> '.sprintf("%0.2f", (($file['size'] /1024) / 1024)).' MB </td>
+	   </tr>
+		';	// info->isFile ()) {
 	}
 
-	$htmlPage = $htmlPage . '</body></html>';
-	return $htmlPage;
+	$htmlPage = $htmlPage . '
+	</table>
+</body></html>';
+
+		return $htmlPage;
 }
 
 
@@ -144,31 +198,43 @@ function recursiveDirectoryIterator ($directory = null, $host, $files = array())
 			
 			if( in_array($info->getExtension(),$arrExtensions) ){
 
+				$url = $host . str_replace($rootFolder, "", $info->getPathname());
+				
+				//Try to get a correct file size
+				$fsize = $info->getSize();
+
+				//very slow but the only way that works on all platforms.
+				if($fsize < 0 ) {
+					$fsize = array_change_key_case(get_headers($url, 1),CASE_LOWER);
+					if ( strcasecmp($fsize[0], 'HTTP/1.1 200 OK') != 0 ) {
+						$fsize = $fsize['content-length'][1]; }
+					else {
+						$fsize = $fsize['content-length'];
+					}
+				}
+				
 				if ($DBI) {
 					
 					$files [] = [
 						'url'=> $host . str_replace($rootFolder, "", $info->getPathname()),
-						'name'=> $info->getFilename()
+						'name'=> $info->getFilename(),
+						'size'=> $fsize
 					];
 					
-				} elseif ($info->getSize() > 0 ) {
+				} else {	//if ($info->getSize() > 0 ) {	//Removed the check on filesize, it should be ok now.
 					
 					$files [] = [
 						'url'=> $host . str_replace($rootFolder, "", $info->getPathname()).'#'.urlencode(str_replace('#','',$info->getFilename())),
 						'size'=>$info->getSize()
 					];
 					
-				} else {
-					
-					$files [] = $host . str_replace($rootFolder, "", $info->getPathname()).'#'.urlencode(str_replace('#','',$info->getFilename()));
-					
+				//} else {
+				//	$files [] = $host . str_replace($rootFolder, "", $info->getPathname()).'#'.urlencode(str_replace('#','',$info->getFilename()));
 				}
 			}
 
         } elseif (!$info->isDot ()) {
-			/*
-			$files ['directories'][] = $host . $info->getPathname() ."/";
-			//*/
+
             $list = recursiveDirectoryIterator(
                         $directory.DIRECTORY_SEPARATOR.$info->__toString (), $host
             );
