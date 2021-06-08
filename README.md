@@ -1,5 +1,5 @@
 # PHPinfoil
-Simple PHP, one file, no database, no external library and no bullshit to serve your backups and eshop games to Tinfoil.
+Simple PHP, one file, no database, no external library to serve your backups and eshop games to Tinfoil and DBI.
 
 I needed a light and fast php to create a repository for Tinfoil so that I could install backups without links. 
 The two projects I found, however, were not able to manage a folder structure, which for some archives can also be articulated.
