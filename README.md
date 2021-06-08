@@ -22,6 +22,12 @@ I then took a Raspberry to which I connected my usb HDD, and with this php I sol
 * - Check that all your games have [TitleID] in the filename or Tinfoil won't show it in the list
 * - configure the parameters accordingly, see following Example
 
+#### Warning
+Tinfoil needs the TitleId in the file name. To correctly rename and reorganize yor collection you can use:
+- https://github.com/giwty/switch-library-manager by @giwty
+- https://github.com/gibaBR/Switch-Backup-Manager by @gibaBR
+
+##
 
 ### Example (change the assumptions below to match your case):
   * Assuming your http server is serving at http://1.2.3.4:8080/
