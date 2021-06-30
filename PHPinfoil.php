@@ -52,7 +52,8 @@
 ****************************************/
 $MOTD = "Wellcome to my personal NX Shop";			//Message that appears each time Tinfoil start and receive the file for the first time
 
-$Host = "http://this.is.myip/";						//Base http name, if the games are in http://1.2.3.4:8080/games/mygames.nsp
+// $Host = "http://192.168.178.7:8888/";						//Base http name, if the games are in http://1.2.3.4:8080/games/mygames.nsp
+$Host = $_SERVER['HOST'];
 													// then put here http://1.2.3.4:8080/
 $rootFolder = $_SERVER['DOCUMENT_ROOT'] . "/";		//The base path to use to browse files and create cache, at the moment must be a folder reachable by http client
 $Folder = "data/games";								//Where the games file are stored, can contain subfolders

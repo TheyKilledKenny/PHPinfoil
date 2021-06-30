@@ -74,3 +74,17 @@ in Tinfoil set a location to http://1.2.3.4:8080/php/
 8. close and reopen Tinfoil
 
 
+## Docker
+  * Assuming your http server is serving at http://1.2.3.4:8080/
+  * Assuming the games are in /data/games folder of your http server
+
+Run:
+```bash
+docker run -d --rm -e HOST=1.2.3.4:8080 -v /data/games/:/var/www/html/data/games -p 8080:80 sbkg0002/phptinfoil:1
+```
+Build the image yourself:
+```bash
+git clone https://github.com/TheyKilledKenny/PHPinfoil.git
+cd PHPinfoil
+docker build -t phpinfoil .
+```
