@@ -9,6 +9,14 @@ https://github.com/ibnux/php-tinfoil-server
 
 I then took a Raspberry to which I connected my usb HDD, and with this php I solved my problems.
 
+## Changelog
+
+### Unreleased ([PR #7](https://github.com/TheyKilledKenny/PHPinfoil/pull/7))
+
+- Update the Docker base image to PHP 8.4 with Apache ([#6](https://github.com/TheyKilledKenny/PHPinfoil/issues/6)).
+- Normalize Windows path separators and URL-encode download paths for Tinfoil and DBI. Keep Tinfoil’s `files` field as a JSON array ([#2](https://github.com/TheyKilledKenny/PHPinfoil/issues/2)).
+- Use `HOST` for absolute download URLs. When `HOST` is unset, use paths relative to the web root. Regenerate the index under the new default cache name, `cache-v2`.
+
 ### What it does
 - Cycles through all the files and folders in the given path and creates the json file to be provided to Tinfoil
 - The first run it creates a json index cache file (write permission is needed), to avoid rescan all the files.
