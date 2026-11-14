@@ -53,12 +53,16 @@
 $MOTD = "Wellcome to my personal NX Shop";			//Message that appears each time Tinfoil start and receive the file for the first time
 
 // $Host = "http://192.168.178.7:8888/";						//Base http name, if the games are in http://1.2.3.4:8080/games/mygames.nsp
-$Host = $_SERVER['HOST'];
+$Host = getenv('HOST') ?: ''; // Optional public base URL. An empty value uses root-relative links.
+if ($Host !== '' && !preg_match('~^https?://~i', $Host)) {
+	$Host = 'http://' . $Host; // Support the documented Docker HOST=address:port setting.
+}
+$Host = rtrim($Host, '/');
 													// then put here http://1.2.3.4:8080/
 $rootFolder = $_SERVER['DOCUMENT_ROOT'] . "/";		//The base path to use to browse files and create cache, at the moment must be a folder reachable by http client
 $Folder = "data/games";								//Where the games file are stored, can contain subfolders
 $cacheFolder = "cache/";							//the cache Folder where to store the cache file. MUST Have write permission
-$cacheFile = "cache";								//the cached file. MUST Have write permission
+$cacheFile = "cache-v2";								//the cached file. MUST Have write permission
 $arrExtensions = ['nsp','xci','nsz', 'xcz'];		//which extensions to list 
 $DBI = true;										//if true then output in html to be compatible with DBI installer
 $BackColor = "#000000";								//Page Background Color
@@ -86,7 +90,7 @@ if(file_exists($rootFolder.$cacheFolder.$cacheFile) && !isset($_GET['reset'])){
 	set_time_limit(0);			//Try to avoid Timeout for big collection of files
 	$aar = recursiveDirectoryIterator($Folder, $Host);
 	$aarr['total'] = count($aar);
-	asort($aar);				//Try to Sort
+	sort($aar);				//Try to Sort
 	$aarr['files'] = $aar;
 	if(trim($MOTD) != "") $aarr['success'] = $MOTD;
 
@@ -167,7 +171,7 @@ function createHtml($arr = null) {
        $htmlPage = $htmlPage . '
 	   <tr>
 		<td> - </td>
-		<td><a href="' . $file['url'] . '">' . $file['name'] . '</a><br /></td>
+		<td><a href="' . htmlspecialchars($file['url'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '">' . htmlspecialchars($file['name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</a><br /></td>
 		<td style="text-align:right;"> '.sprintf("%0.2f", (($file['size'] /1024) / 1024)).' MB </td>
 	   </tr>
 		';	// info->isFile ()) {
@@ -186,7 +190,7 @@ function createHtml($arr = null) {
 * @param array $files
 * @return array
 */
-function recursiveDirectoryIterator ($directory = null, $host, $files = array()) {
+function recursiveDirectoryIterator ($directory, $host, $files = array()) {
     
 	global $rootFolder;
 	global $arrExtensions;
@@ -199,13 +203,15 @@ function recursiveDirectoryIterator ($directory = null, $host, $files = array())
 			
 			if( in_array($info->getExtension(),$arrExtensions) ){
 
-				$url = $host . str_replace($rootFolder, "", $info->getPathname());
+				$relativeDirectory = trim(str_replace(DIRECTORY_SEPARATOR, '/', $directory), '/');
+				$path = $relativeDirectory === '' ? $info->getFilename() : $relativeDirectory . '/' . $info->getFilename();
+				$url = $host . '/' . implode('/', array_map('rawurlencode', explode('/', $path)));
 				
 				//Try to get a correct file size
 				$fsize = $info->getSize();
 
 				//very slow but the only way that works on all platforms.
-				if($fsize < 0 ) {
+				if ($fsize < 0 && $host !== '') {
 					$fsize = array_change_key_case(get_headers($url, 1),CASE_LOWER);
 					if ( strcasecmp($fsize[0], 'HTTP/1.1 200 OK') != 0 ) {
 						$fsize = $fsize['content-length'][1]; }
@@ -217,7 +223,7 @@ function recursiveDirectoryIterator ($directory = null, $host, $files = array())
 				if ($DBI) {
 					
 					$files [] = [
-						'url'=> $host . str_replace($rootFolder, "", $info->getPathname()),
+						'url'=> $url,
 						'name'=> $info->getFilename(),
 						'size'=> $fsize
 					];
@@ -225,8 +231,8 @@ function recursiveDirectoryIterator ($directory = null, $host, $files = array())
 				} else {	//if ($info->getSize() > 0 ) {	//Removed the check on filesize, it should be ok now.
 					
 					$files [] = [
-						'url'=> $host . str_replace($rootFolder, "", $info->getPathname()).'#'.urlencode(str_replace('#','',$info->getFilename())),
-						'size'=>$info->getSize()
+						'url'=> $url . '#' . rawurlencode(str_replace('#', '', $info->getFilename())),
+						'size'=> $fsize
 					];
 					
 				//} else {
