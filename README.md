@@ -11,7 +11,7 @@ I then took a Raspberry to which I connected my usb HDD, and with this php I sol
 
 ## Changelog
 
-### Unreleased ([PR #7](https://github.com/TheyKilledKenny/PHPinfoil/pull/7))
+### 2026-11-14 ([PR #7](https://github.com/TheyKilledKenny/PHPinfoil/pull/7))
 
 - Update the Docker base image to PHP 8.4 with Apache ([#6](https://github.com/TheyKilledKenny/PHPinfoil/issues/6)).
 - Normalize Windows path separators and URL-encode download paths for Tinfoil and DBI. Keep Tinfoil’s `files` field as a JSON array ([#2](https://github.com/TheyKilledKenny/PHPinfoil/issues/2)).
